@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: mindfactory
+      POSTGRES_USER: mindfactory
+      POSTGRES_PASSWORD: mindfactory
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./backend
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USER: mindfactory
+      DATABASE_PASS: mindfactory
+      DATABASE_NAME: mindfactory
+      DATABASE_SSL: "false"
+      JWT_SECRET: change-me
+    volumes:
+      - backend-uploads:/app/uploads
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:3000/api
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  db-data:
+  backend-uploads:
